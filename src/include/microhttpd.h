@@ -935,7 +935,14 @@ enum MHD_OPTION
    * pointer to a closure to pass to the request completed callback.
    * The second pointer maybe NULL.
    */
-  MHD_OPTION_NOTIFY_CONNECTION = 27
+  MHD_OPTION_NOTIFY_CONNECTION = 27,
+
+  /**
+   * Register a MHD_EventManager object to handle events.
+   *
+   * This option should be followed by a pointer to a MHD_EventManager struct.
+   */
+  MHD_OPTION_EXTERNAL_EVENT_MANAGER = 28
 
 };
 
@@ -1488,6 +1495,143 @@ typedef int
                          const char *data,
                          uint64_t off,
                          size_t size);
+
+/* **************** EventManager types ***************** */
+
+/**
+ * @brief A watch handle.
+ * Watches are used to receive notifications when a file descriptor is ready
+ * for reading / writing.
+ */
+typedef struct MHD_Watch MHD_Watch;
+
+/**
+ * @brief A timeout handle
+ */
+typedef struct MHD_Timeout MHD_Timeout;
+
+/**
+ * @brief The EventManager interface.
+ */
+typedef struct MHD_EventManager MHD_EventManager;
+
+/**
+ * @brief Type of watch events.
+ */
+typedef enum
+{
+  MHD_WATCH_IN = 0x01,  //!< Input event
+  MHD_WATCH_OUT = 0x02,  //!< Output event
+} MHD_WatchEvent;
+
+/**
+ * @brief The function invoked when a watch event occurs.
+ * @param watch the Watch that triggered this event
+ * @param fd the file descriptor that triggered the event.
+ * @param event the type of event
+ * @param mhd_data The data provided when the watch was created.
+ */
+typedef void
+(*MHD_WatchCallback)(MHD_Watch *watch,
+                     int fd,
+                     MHD_WatchEvent event,
+                     void *mhd_data);
+
+/**
+ * @brief The function invoked when a timeout event occurs.
+ * @param timeout The timeout that triggered the event.
+ * @param mhd_data The data provided when the timeout was created.
+ */
+typedef void
+(*MHD_TimeoutCallback)(MHD_Timeout *timeout,
+                       void *mhd_data);
+
+/**
+ * @brief An abstracted external event management API.
+ */
+struct MHD_EventManager
+{
+  /**
+   * @brief Opaque data used by the implementation of the EventManager.
+   */
+  void *userdata;
+
+  /**
+   * @brief Called by MHD to create a new watch.
+   * @param em The MHD_EventManager passed to the MHD.
+   * @param fd The file descriptor to watch.
+   * @param event The type of events to watch for.
+   * @param callback The callback that will be run when any event occurs.
+   * @param mhd_data Opaque data that will be passed to the callback function
+   *   when the event occurs.
+   * @returns A MHD_Watch.
+   */
+  MHD_Watch*
+  (*watch_new)(const MHD_EventManager *em,
+               int fd,
+               MHD_WatchEvent events,
+               MHD_WatchCallback callback,
+               void *mhd_data);
+
+  /**
+   * @brief Update the set of events for a watch.
+   * @param watch The Watch to update
+   * @param events The new events to trigger on.
+   * @note Implementations must ensure this is safe to call from within a
+   * MHD_WatchCallback..
+   */
+  void
+  (*watch_update)(MHD_Watch *watch,
+                  MHD_WatchEvent events);
+
+  /**
+   * @brief Free a watch.
+   * @param watch The Watch to free.
+   * @note Implementations must ensure this is safe to call from within a
+   * MHD_WatchCallback..
+   */
+  void
+  (*watch_free)(MHD_Watch *w);
+
+  /**
+   * @brief Create a new timeout.
+   * @param em The MHD_EventManager passed to the MHD.
+   * @param tv The absolute time when this timeout should trigger. If tv is
+   *   NULL, the timeout will be disabled.
+   * @param callback The callback to run when the timeout event occurs.
+   * @param mhd_data Opaque data that will be passed to the callback function
+   *   when the timeout occurs.
+   *
+   * When the timeout occurs, the callback function will be run and the timeout
+   * disabled. It can be re-enabled by calling timeout_update.
+   */
+  MHD_Timeout*
+  (*timeout_new)(const MHD_EventManager *em,
+                 const struct timeval *tv,
+                 MHD_TimeoutCallback callback,
+                 void *mhd_data);
+
+  /**
+   * @brief Update the expiration time for a timeout.
+   * @param timeout The timeout to update.
+   * @param tv The new time when this timeout should be triggered. If tv is
+   *   NULL, the timeout will be disabled.
+   * @note Implementations must ensure this is safe to call from within a
+   * MHD_TimeoutCallback.
+   */
+  void
+  (*timeout_update)(MHD_Timeout *timeout,
+                    const struct timeval *tv);
+
+  /**
+   * @brief Free a timeout
+   * @param timeout The timeout to free.
+   * @note Implementations must ensure this is safe to call from within a
+   * MHD_TimeoutCallback.
+   */
+  void
+  (*timeout_free)(MHD_Timeout *timeout);
+};
 
 /* **************** Daemon handling functions ***************** */
 

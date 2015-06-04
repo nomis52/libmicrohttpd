@@ -325,6 +325,7 @@ if test "$enable_epoll" != "no"; then
     enable_epoll='no'
   fi
 fi
+AM_CONDITIONAL([HAVE_EPOLL], [test "x$enable_epoll" = "xyes"])
 
 if test "x$enable_epoll" = "xyes"; then
   AC_CACHE_CHECK([for epoll_create1()], [mhd_cv_have_epoll_create1], [
@@ -337,6 +338,10 @@ fd = epoll_create1(EPOLL_CLOEXEC);]])],
   AS_IF([test "x$mhd_cv_have_epoll_create1" = "xyes"],[
     AC_DEFINE([[HAVE_EPOLL_CREATE1]], [[1]], [Define if you have epoll_create1 function.])])
 fi
+
+# kqueue
+AC_CHECK_FUNCS([kqueue])
+AM_CONDITIONAL(HAVE_KQUEUE, test "${ac_cv_func_kqueue}" = "yes")
 
 if test "x$HAVE_POSIX_THREADS" = "xyes"; then
   # Check for pthread_setname_np()

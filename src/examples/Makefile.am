@@ -68,6 +68,16 @@ if HAVE_W32
 AM_CFLAGS += -DWINDOWS
 endif
 
+if HAVE_KQUEUE
+noinst_PROGRAMS += \
+ kqueue_eventmanager_example
+endif
+
+if HAVE_EPOLL
+noinst_PROGRAMS += \
+ epoll_eventmanager_example
+endif
+
 minimal_example_SOURCES = \
  minimal_example.c
 minimal_example_LDADD = \
@@ -196,3 +206,17 @@ spdy_response_with_callback_SOURCES = \
 spdy_response_with_callback_LDADD = \
   $(top_builddir)/src/microspdy/libmicrospdy.la \
  -lz
+
+epoll_eventmanager_example_SOURCES = \
+ epoll_event_manager.c \
+ event_manager.h \
+ epoll_eventmanager_example.c
+epoll_eventmanager_example_LDADD = \
+ $(top_builddir)/src/microhttpd/libmicrohttpd.la
+
+kqueue_eventmanager_example_SOURCES = \
+ event_manager.h \
+ kqueue_eventmanager_example.c \
+ kqueue_event_manager.c
+kqueue_eventmanager_example_LDADD = \
+ $(top_builddir)/src/microhttpd/libmicrohttpd.la
