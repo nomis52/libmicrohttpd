@@ -869,6 +869,16 @@ struct MHD_Connection
    * Is the connection wanting to resume?
    */
   int resuming;
+
+  /**
+   * The Watch associated with this connection.
+   */
+  struct MHD_Watch *watch;
+
+  /**
+   * The Timeout associated with this connection.
+   */
+  struct MHD_Timeout *timeout;
 };
 
 /**
@@ -1297,6 +1307,11 @@ struct MHD_Daemon
    */
   unsigned int fastopen_queue_size;
 #endif
+
+  /**
+   * The EventManager, if one was provided.
+   */
+  MHD_EventManager *em;
 };
 
 
