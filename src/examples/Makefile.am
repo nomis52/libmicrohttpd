@@ -209,14 +209,14 @@ spdy_response_with_callback_LDADD = \
 
 epoll_eventmanager_example_SOURCES = \
  epoll_event_manager.c \
- event_manager.h \
- epoll_eventmanager_example.c
+ event_manager_example.c \
+ event_manager.h
 epoll_eventmanager_example_LDADD = \
  $(top_builddir)/src/microhttpd/libmicrohttpd.la
 
 kqueue_eventmanager_example_SOURCES = \
  event_manager.h \
- kqueue_eventmanager_example.c \
+ event_manager_example.c \
  kqueue_event_manager.c
 kqueue_eventmanager_example_LDADD = \
  $(top_builddir)/src/microhttpd/libmicrohttpd.la

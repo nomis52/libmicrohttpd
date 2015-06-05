@@ -17,15 +17,15 @@
      Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 */
 /**
- * @file minimal_example.c
- * @brief minimal example for how to use libmicrohttpd
+ * @file event_manager_example.c
+ * @brief minimal example for how to use libmicrohttpd with an external event
+ * manager.
  * @author Christian Grothoff
  */
 
 #include "platform.h"
 #include <microhttpd.h>
 #include <stdint.h>
-#include <sys/event.h>
 #include "event_manager.h"
 
 #define PAGE "<html><head><title>libmicrohttpd demo</title></head><body>libmicrohttpd demo</body></html>"
@@ -123,8 +123,7 @@ main (int argc, char *const *argv)
       printf ("%s PORT\n", argv[0]);
       return 1;
     }
-  d = MHD_start_daemon (// MHD_USE_DEBUG,
-                        MHD_USE_DEBUG | MHD_USE_SSL,
+  d = MHD_start_daemon (MHD_USE_DEBUG | MHD_USE_SSL,
                         atoi (argv[1]),
                         NULL, NULL, &ahc_echo, PAGE,
                         MHD_OPTION_CONNECTION_TIMEOUT, (unsigned int) 10,
